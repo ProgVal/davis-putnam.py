@@ -21,6 +21,6 @@ def parse(fd):
             assert nb_variables is not None and nb_clauses is not None, \
                     'Missing header'
             assert tokens[-1] == '0'
-            literals = map(structures.Literal.from_string, tokens[0:-1])
+            literals = map(int, tokens[0:-1])
             clauses.append(structures.Clause(literals))
     return structures.System(int(nb_variables), clauses)
