@@ -17,7 +17,6 @@ def extract_literal(literal_id, clause):
 
 def resolve_bucket(bucket_id, buckets):
     """Returns possible resolutions for the given bucket."""
-    clauses = set()
     for clause1 in buckets[bucket_id]:
         (equal1, not_equal1) = extract_literal(bucket_id, clause1)
         assert len(equal1) >= 1, equal1
