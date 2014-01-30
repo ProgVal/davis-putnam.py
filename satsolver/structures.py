@@ -120,4 +120,4 @@ class System:
         return System(self.clauses | other.clauses)
 
     def max_literal(self):
-        return Literal.max(self.clauses)
+        return Clause.max(self.clauses)
