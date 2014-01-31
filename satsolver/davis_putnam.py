@@ -10,29 +10,22 @@ def create_buckets(system):
 def extract_literal(literal_id, clause):
     """Returns two list, containing of instances of a literal, and all
     other literals."""
-    variations = set([literal_id, -literal_id])
-    equal = variations & clause.literals
-    not_equal = clause.literals - variations
-    return (equal, not_equal)
+    return clause.literals - set([literal_id, -literal_id])
 
 def resolve_bucket(bucket_id, buckets):
     """Returns possible resolutions for the given bucket."""
     bucket = list(buckets[bucket_id])
-    with_literal = filter(lambda x:bucket_id in x, bucket)
+    with_literal = list(filter(lambda x:bucket_id in x, bucket))
     with_negative_literal = list(filter(lambda x:-bucket_id in x, bucket))
     for (i, clause1) in enumerate(with_literal):
-        #print('%i %i' % (len(buckets[bucket_id]), i))
-        (equal1, not_equal1) = extract_literal(bucket_id, clause1)
-        assert len(equal1) >= 1, equal1
+        print('%i %i' % (len(with_literal), i))
+        not_equal1 = extract_literal(bucket_id, clause1)
         for clause2 in with_negative_literal:
-            (equal2, not_equal2) = extract_literal(bucket_id, clause2)
-            assert len(equal2) >= 1, equal2
-            if list(equal1)[0] != list(equal2)[0]:
-                # Equivalent to polarity comparison
-                clause = structures.Clause(not_equal1 | not_equal2)
-                index = abs(clause.max_literal())
-                assert index != bucket_id
-                buckets[index].add(clause)
+            not_equal2 = extract_literal(bucket_id, clause2)
+            clause = structures.Clause(not_equal1 | not_equal2)
+            index = abs(clause.max_literal())
+            assert index != bucket_id
+            buckets[index].add(clause)
 
 def solve(system):
     buckets = create_buckets(system)
