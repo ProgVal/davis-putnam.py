@@ -7,11 +7,6 @@ def create_buckets(system):
         buckets[abs(clause.max_literal())].add(clause)
     return buckets
 
-def extract_literal(literal_id, clause):
-    """Returns two list, containing of instances of a literal, and all
-    other literals."""
-    return clause.literals - set([literal_id, -literal_id])
-
 def resolve_bucket(bucket_id, buckets):
     """Returns possible resolutions for the given bucket."""
     bucket = list(buckets[bucket_id])
@@ -19,10 +14,9 @@ def resolve_bucket(bucket_id, buckets):
     with_negative_literal = list(filter(lambda x:-bucket_id in x, bucket))
     for (i, clause1) in enumerate(with_literal):
         print('%i %i' % (len(with_literal), i))
-        not_equal1 = extract_literal(bucket_id, clause1)
         for clause2 in with_negative_literal:
-            not_equal2 = extract_literal(bucket_id, clause2)
-            clause = structures.Clause(not_equal1 | not_equal2)
+            clause = (clause1 | clause2)
+            clause.remove_variable(bucket_id)
             index = abs(clause.max_literal())
             assert index != bucket_id
             buckets[index].add(clause)

@@ -17,7 +17,7 @@ class Clause:
 
     def __or__(self, other):
         """Union"""
-        if any(lambda x:(not x) in other, self):
+        if any(map(lambda x:(not x) in other, self)):
             return Clause(set())
         return Clause(self.literals | other.literals)
 
@@ -36,6 +36,10 @@ class Clause:
             else:
                 literals.add(int(literal))
         self.literals = set(literals)
+
+    def remove_variable(self, i):
+        """Remove a literal and its negation from the clause."""
+        self.literals -= set([i, -i])
             
 
     @classmethod
