@@ -15,11 +15,14 @@ def resolve_bucket(bucket_id, buckets):
     for (i, clause1) in enumerate(with_literal):
         print('%i %i' % (len(with_literal), i))
         for clause2 in with_negative_literal:
-            clause = (clause1 | clause2)
-            clause.remove_variable(bucket_id)
+            clause = (clause1 | clause2).strip_variable(bucket_id)
             index = abs(clause.max_literal())
             assert index != bucket_id
-            buckets[index].add(clause)
+            if len(clause) == 1:
+                buckets[index] = set([clause])
+                return
+            elif not clause.always_satisfied:
+                buckets[index].add(clause)
 
 def solve(system):
     buckets = create_buckets(system)
@@ -35,7 +38,8 @@ def solve(system):
             exists_false = False
             exists_true = False
             for clause in bucket:
-                if i in clause and -i in clause:
+                if i in clause and -i in clause or \
+                        clause.strip_variable(i).is_satisfied(valuation):
                     # Clause is always satisfied
                     pass
                 elif i in clause:

@@ -21,6 +21,9 @@ class Clause:
             return Clause(set())
         return Clause(self.literals | other.literals)
 
+    def __len__(self):
+        return len(self.literals)
+
     def max_literal(self):
         if self.literals:
             return max(self.literals, key=abs)
@@ -37,9 +40,21 @@ class Clause:
                 literals.add(int(literal))
         self.literals = set(literals)
 
-    def remove_variable(self, i):
-        """Remove a literal and its negation from the clause."""
-        self.literals -= set([i, -i])
+    def strip_variable(self, i):
+        """Returns a clause with all instances of a literal and its negation
+        removed."""
+        return Clause(self.literals - set([i, -i]))
+
+    @property
+    def always_satisfied(self):
+        if len(self) != 2:
+            return False
+        else:
+            literals = list(self)
+            return literals[0] == -literals[1]
+
+    def is_satisfied(self, valuation):
+        return any(map(lambda x:(x>0) is valuation[abs(x)], self.literals))
             
 
     @classmethod
