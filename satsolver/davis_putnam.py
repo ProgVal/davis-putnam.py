@@ -17,20 +17,51 @@ def extract_literal(literal_id, clause):
 
 def resolve_bucket(bucket_id, buckets):
     """Returns possible resolutions for the given bucket."""
-    for clause1 in buckets[bucket_id]:
+    bucket = list(buckets[bucket_id])
+    with_literal = filter(lambda x:bucket_id in x, bucket)
+    with_negative_literal = list(filter(lambda x:-bucket_id in x, bucket))
+    for (i, clause1) in enumerate(with_literal):
+        #print('%i %i' % (len(buckets[bucket_id]), i))
         (equal1, not_equal1) = extract_literal(bucket_id, clause1)
         assert len(equal1) >= 1, equal1
-        for clause2 in buckets[bucket_id]:
+        for clause2 in with_negative_literal:
             (equal2, not_equal2) = extract_literal(bucket_id, clause2)
             assert len(equal2) >= 1, equal2
             if list(equal1)[0] != list(equal2)[0]:
                 # Equivalent to polarity comparison
                 clause = structures.Clause(not_equal1 | not_equal2)
-                buckets[abs(clause.max_literal())].add(clause)
+                index = abs(clause.max_literal())
+                assert index != bucket_id
+                buckets[index].add(clause)
 
 def solve(system):
     buckets = create_buckets(system)
     for i in range(len(buckets)-1, 0, -1):
-        print(i)
+        print('%i %i' % (i, len(buckets[i])))
         resolve_bucket(i, buckets)
-    print(repr(buckets))
+    valuation = [None]
+    for (i, bucket) in enumerate(buckets):
+        if i == 0 and bucket:
+            # No solution
+            return None
+        elif i != 0:
+            exists_false = False
+            exists_true = False
+            for clause in bucket:
+                if i in clause and -i in clause:
+                    # Clause is always satisfied
+                    pass
+                elif i in clause:
+                    exists_true = True
+                else:
+                    assert -i in clause, ('Clause in bucket %i containing '
+                            'neither %i or -%i') % (i, i, i)
+                    exists_false = True
+            if exists_true:
+                valuation.append(True)
+            elif exists_false:
+                valuation.append(False)
+            else:
+                # All clauses are always satisfied
+                valuation.append(True)
+    return valuation
