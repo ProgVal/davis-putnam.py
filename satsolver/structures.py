@@ -22,7 +22,10 @@ class Clause:
         return Clause(self.literals | other.literals)
 
     def max_literal(self):
-        return max(self.literals, key=abs)
+        if self.literals:
+            return max(self.literals, key=abs)
+        else:
+            return 0
 
     def simplify(self):
         literals = set()
