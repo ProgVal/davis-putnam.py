@@ -1,49 +1,27 @@
-class Clause:
-    __slots__ = ('literals',)
-    def __init__(self, literals):
-        self.literals = set(literals)
-
-    def __contains__(self, v):
-        return v in self.literals
-
-    def __iter__(self):
-        return iter(self.literals)
-
+class Clause(frozenset):
+    __slots__ = ()
     def __str__(self):
         return ' '.join(map(str, self)) + ' 0'
 
     def __repr__(self):
-        return 'Clause(%r)' % self.literals
+        return 'Clause(%r)' % super(Clause, self).__repr__()
 
     def __or__(self, other):
         """Union"""
         if any(map(lambda x:(not x) in other, self)):
             return Clause(set())
-        return Clause(self.literals | other.literals)
-
-    def __len__(self):
-        return len(self.literals)
+        return Clause(super(Clause, self).__or__(other))
 
     def max_literal(self):
-        if self.literals:
-            return max(self.literals, key=abs)
+        if self:
+            return max(self, key=abs)
         else:
             return 0
-
-    def simplify(self):
-        literals = set()
-        for literal in self.literals:
-            if -int(literal) in literals:
-                self.literals = set([literal, -literal])
-                return
-            else:
-                literals.add(int(literal))
-        self.literals = set(literals)
 
     def strip_variable(self, i):
         """Returns a clause with all instances of a literal and its negation
         removed."""
-        return Clause(self.literals - set([i, -i]))
+        return Clause(self - set([i, -i]))
 
     @property
     def always_satisfied(self):
@@ -54,7 +32,7 @@ class Clause:
             return literals[0] == -literals[1]
 
     def is_satisfied(self, valuation):
-        return any(map(lambda x:(x>0) is valuation[abs(x)], self.literals))
+        return any(map(lambda x:(x>0) is valuation[abs(x)], self))
             
 
     @classmethod
