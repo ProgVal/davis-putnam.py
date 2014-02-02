@@ -6,12 +6,32 @@ from satsolver import parser
 from satsolver import davis_putnam
 
 def main():
-    if len(sys.argv) != 2:
-        print('Syntax: %s file.cnf' % sys.argv[0])
+    args = sys.argv.copy()
+    if '--verbose' in args[1:]:
+        verbose = True
+        args.remove('--verbose')
+    else:
+        verbose = False
+    if len(args) != 2:
+        print('Syntax: %s [--verbose] file.cnf' % sys.argv[0])
         exit()
     with open(sys.argv[1]) as fd:
         system = parser.parse(fd)
-    print(repr(davis_putnam.solve(system)))
+    try:
+        solution = davis_putnam.solve(system, verbose)
+    except davis_putnam.NotSatisfiable:
+        print('s UNSATISFIABLE')
+    except davis_putnam.UnknownSatisfiability:
+        print('s ???')
+    else:
+        print('s SATISFIABLE')
+        if verbose:
+            print('')
+        for (i, v) in enumerate(solution):
+            if i == 0:
+                continue
+            else:
+                print('v %s%i' % (('' if v else '-'), i))
 
 if __name__ == '__main__':
     main()

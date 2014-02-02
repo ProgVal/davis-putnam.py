@@ -1,18 +1,19 @@
 class Clause(frozenset):
+    """A subclasses of frozenset (ie. unmutable set) that implements extra
+    methods for computing clauses properties and operations."""
     __slots__ = ()
     def __str__(self):
         return ' '.join(map(str, self)) + ' 0'
 
-    def __repr__(self):
-        return 'Clause(%r)' % super(Clause, self).__repr__()
-
     def __or__(self, other):
-        """Union"""
+        """Union of two clauses."""
         if any(map(lambda x:(not x) in other, self)):
             return Clause(set())
         return Clause(super(Clause, self).__or__(other))
 
     def max_literal(self):
+        """Returns the maximum literal of the clauses, using the absolute
+        value for ordering."""
         if self:
             return max(self, key=abs)
         else:
@@ -25,6 +26,7 @@ class Clause(frozenset):
 
     @property
     def always_satisfied(self):
+        """Determines whether or not a clause is always satisfied."""
         if len(self) != 2:
             return False
         else:
@@ -32,21 +34,13 @@ class Clause(frozenset):
             return literals[0] == -literals[1]
 
     def is_satisfied(self, valuation):
+        """Determines whether or not a clause is satisfied for the given
+        valuation."""
         return any(map(lambda x:(x>0) is valuation[abs(x)], self))
-            
-
-    @classmethod
-    def remove_duplicates(cls, clauses):
-        new_clauses = set()
-        for clause1 in clauses:
-            for clause2 in new_clauses:
-                if clause1 == clause2:
-                    break
-            else:
-                new_clauses.add(clause1)
-        return new_clauses
 
 class System:
+    """Represents a set of clauses, with extra data provided by the cnf file
+    header."""
     __slots__ = ('nb_variables', 'clauses')
     def __init__(self, nb_variables, clauses):
         self.nb_variables = nb_variables

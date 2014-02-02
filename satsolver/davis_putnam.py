@@ -1,5 +1,10 @@
 from . import structures
 
+class NotSatisfiable(Exception):
+    pass
+class UnknownSatisfiability(Exception):
+    pass
+
 def create_buckets(system):
     """Creates buckets from a given SAT problem."""
     buckets = [set() for x in range(0, system.nb_variables+1)]
@@ -7,33 +12,34 @@ def create_buckets(system):
         buckets[abs(clause.max_literal())].add(clause)
     return buckets
 
-def resolve_bucket(bucket_id, buckets):
+def resolve_bucket(bucket_id, buckets, verbose):
     """Returns possible resolutions for the given bucket."""
     bucket = list(buckets[bucket_id])
     with_literal = list(filter(lambda x:bucket_id in x, bucket))
     with_negative_literal = list(filter(lambda x:-bucket_id in x, bucket))
     for (i, clause1) in enumerate(with_literal):
-        print('%i %i' % (len(with_literal), i))
         for clause2 in with_negative_literal:
             clause = (clause1 | clause2).strip_variable(bucket_id)
             index = abs(clause.max_literal())
             assert index != bucket_id
             if len(clause) == 1:
-                buckets[index] = set([clause])
+                literal = list(clause)[0]
+                buckets[index] = set([clause] +
+                        list(filter(lambda x:-literal in x, buckets[index])))
                 return
             elif not clause.always_satisfied:
                 buckets[index].add(clause)
 
-def solve(system):
+def solve(system, verbose=False):
     buckets = create_buckets(system)
     for i in range(len(buckets)-1, 0, -1):
-        print('%i %i' % (i, len(buckets[i])))
-        resolve_bucket(i, buckets)
+        if verbose:
+            print('%i %i' % (i, len(buckets[i])))
+        resolve_bucket(i, buckets, verbose)
     valuation = [None]
     for (i, bucket) in enumerate(buckets):
         if i == 0 and bucket:
-            # No solution
-            return None
+            raise NotSatisfiable()
         elif i != 0:
             exists_false = False
             exists_true = False
@@ -50,8 +56,12 @@ def solve(system):
                     exists_false = True
             if exists_true:
                 valuation.append(True)
+                if any(map(lambda x:not x.is_satisfied(valuation), bucket)):
+                    raise UnknownSatisfiability()
             elif exists_false:
                 valuation.append(False)
+                if any(map(lambda x:not x.is_satisfied(valuation), bucket)):
+                    raise UnknownSatisfiability()
             else:
                 # All clauses are always satisfied
                 valuation.append(True)
