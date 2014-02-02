@@ -18,14 +18,22 @@ def resolve_bucket(bucket_id, buckets, verbose):
     with_literal = list(filter(lambda x:bucket_id in x, bucket))
     with_negative_literal = list(filter(lambda x:-bucket_id in x, bucket))
     for (i, clause1) in enumerate(with_literal):
+        # Iteration over clauses with positive occurence of the biggest
+        # literal
         for clause2 in with_negative_literal:
+            # Iteration over clauses with negative occurence of the biggest
+            # literal
+
             clause = (clause1 | clause2).strip_variable(bucket_id)
+            # Resolution
             index = abs(clause.max_literal())
+            # Index of the bucket we will put the clause in
             assert index != bucket_id
             if len(clause) == 1:
                 literal = list(clause)[0]
                 buckets[index] = set([clause] +
                         list(filter(lambda x:-literal in x, buckets[index])))
+                # Removing all clauses containing this one
                 return
             elif not clause.always_satisfied:
                 buckets[index].add(clause)

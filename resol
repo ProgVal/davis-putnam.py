@@ -37,9 +37,9 @@ def main():
     except davis_putnam.UnknownSatisfiability:
         print('s ???')
     else:
-        print('s SATISFIABLE')
         if options['verbose']:
             print('')
+        print('s SATISFIABLE')
         for (i, v) in enumerate(solution):
             if i == 0:
                 continue
