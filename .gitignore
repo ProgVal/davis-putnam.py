@@ -3,3 +3,7 @@ htmlcov/
 *.swo
 *.swp
 */__pycache__/
+*.pyc
+*.pyo
+make_archive.sh
+satsolver_Lorentz.tar.gz
