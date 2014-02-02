@@ -6,7 +6,7 @@ from satsolver import parser
 from satsolver import davis_putnam
 
 def handle_args(keys):
-    args = sys.argv.copy()
+    args = list(sys.argv) # Shallow copy
     values = {}
     for key in keys:
         if '--'+key in args[1:]:
