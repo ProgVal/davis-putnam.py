@@ -34,7 +34,6 @@ def resolve_bucket(bucket_id, buckets, verbose):
                 buckets[index] = set([clause] +
                         list(filter(lambda x:-literal in x, buckets[index])))
                 # Removing all clauses containing this one
-                return
             elif not clause.always_satisfied:
                 buckets[index].add(clause)
 
