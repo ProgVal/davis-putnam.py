@@ -1,5 +1,5 @@
 c not satisfiable
-p cnf 4 7
+p cnf 4 9
 1 0
 -1 2 3 4 0
 -1 2 3 -4 0
