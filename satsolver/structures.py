@@ -7,8 +7,6 @@ class Clause(frozenset):
 
     def __or__(self, other):
         """Union of two clauses."""
-        if any(map(lambda x:(-x) in other, self)):
-            return Clause(set())
         return Clause(super(Clause, self).__or__(other))
 
     def max_literal(self):
