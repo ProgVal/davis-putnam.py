@@ -38,9 +38,7 @@ def solve(system, verbose=False):
         resolve_bucket(i, buckets, verbose)
     valuation = [None]
     for (i, bucket) in enumerate(buckets):
-        if i == 0 and bucket:
-            raise NotSatisfiable()
-        elif i != 0:
+        if i != 0:
             exists_false = False
             exists_true = False
             for clause in bucket:
@@ -56,12 +54,14 @@ def solve(system, verbose=False):
                     exists_false = True
             if exists_true:
                 valuation.append(True)
-                if any(map(lambda x:not x.is_satisfied(valuation), bucket)):
-                    raise UnknownSatisfiability()
+                for clause2 in bucket:
+                    if not clause2.is_satisfied(valuation):
+                        raise NotSatisfiable()
             elif exists_false:
                 valuation.append(False)
-                if any(map(lambda x:not x.is_satisfied(valuation), bucket)):
-                    raise UnknownSatisfiability()
+                for clause2 in bucket:
+                    if not clause2.is_satisfied(valuation):
+                        raise NotSatisfiable()
             else:
                 # All clauses are always satisfied
                 valuation.append(True)
