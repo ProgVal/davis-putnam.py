@@ -20,7 +20,7 @@ class Clause(frozenset):
     def strip_variable(self, i):
         """Returns a clause with all instances of a literal and its negation
         removed."""
-        return Clause(self - set([i, -i]))
+        return Clause(self - set([i]))
 
     @property
     def always_satisfied(self):

@@ -12,11 +12,24 @@ def create_buckets(system):
         buckets[abs(clause.max_literal())].add(clause)
     return buckets
 
+def simplify_buckets(buckets, up_to):
+    for (i, bucket1) in enumerate(buckets[1:up_to]):
+        for clause in bucket1:
+            pred = lambda x:clause is x or not clause.issubset(x)
+            for j in range(up_to, i, -1):
+                bucket2 = buckets[j]
+                assert all(map(lambda x:abs(x.max_literal())==j, bucket2)),\
+                        (j, bucket2)
+                new_bucket = set(filter(pred, bucket2))
+                assert all(map(lambda x:abs(x.max_literal())==j, new_bucket)),\
+                        (j, new_bucket)
+                buckets[j] = new_bucket
+
 def resolve_bucket(bucket_id, buckets, verbose):
     """Returns possible resolutions for the given bucket."""
     bucket = list(buckets[bucket_id])
-    with_literal = list(filter(lambda x:bucket_id in x, bucket))
-    with_negative_literal = list(filter(lambda x:-bucket_id in x, bucket))
+    with_literal = list(filter(lambda x:bucket_id in x and not x.always_satisfied, bucket))
+    with_negative_literal = list(filter(lambda x:-bucket_id in x and not x.always_satisfied, bucket))
     for (i, clause1) in enumerate(with_literal):
         # Iteration over clauses with positive occurence of the biggest
         # literal
@@ -24,33 +37,34 @@ def resolve_bucket(bucket_id, buckets, verbose):
             # Iteration over clauses with negative occurence of the biggest
             # literal
 
-            clause = (clause1 | clause2).strip_variable(bucket_id)
+            clause = clause1.strip_variable(bucket_id) | \
+                    clause2.strip_variable(-bucket_id)
             # Resolution
             index = abs(clause.max_literal())
             # Index of the bucket we will put the clause in
-            assert index != bucket_id
-            if len(clause) == 1:
-                literal = list(clause)[0]
-                buckets[index] = set([clause] +
-                        list(filter(lambda x:-literal in x, buckets[index])))
-                # Removing all clauses containing this one
-            elif not clause.always_satisfied:
+            #assert index < bucket_id, (bucket_id, clause, clause1, clause2)
+            if not clause.always_satisfied:
                 buckets[index].add(clause)
+    simplify_buckets(buckets, bucket_id)
 
 def solve(system, verbose=False):
     buckets = create_buckets(system)
     for i in range(len(buckets)-1, 0, -1):
         if verbose:
-            print('%i %i' % (i, len(buckets[i])))
+            print('%i %r' % (i, list(map(len, buckets))))
         resolve_bucket(i, buckets, verbose)
-    valuation = [None]
+    valuation = []
     for (i, bucket) in enumerate(buckets):
-        if i != 0:
+        assert len(valuation) == i
+        if i == 0:
+            valuation.append(None)
+        else:
             exists_false = False
             exists_true = False
             for clause in bucket:
                 if i in clause and -i in clause or \
-                        clause.strip_variable(i).is_satisfied(valuation):
+                        clause.strip_variable(i).strip_variable(-i)\
+                        .is_satisfied(valuation):
                     # Clause is always satisfied
                     pass
                 elif i in clause:
