@@ -24,14 +24,22 @@ def handle_args(keys):
         return (values, None)
 
 def main():
-    (options, filename) = handle_args(['verbose'])
+    options = ['verbose']
+    try:
+        import multiprocessing
+        options.append('multiprocess')
+    except ImportError:
+        # multiprocessing is not supported
+        pass
+    (options, filename) = handle_args(options)
     if filename:
         with open(filename) as fd:
             system = parser.parse(fd)
     else:
         system = parser.parse(sys.stdin)
     try:
-        solution = davis_putnam.solve(system, options['verbose'])
+        solution = davis_putnam.solve(system, options['verbose'],
+                options['multiprocess'])
     except davis_putnam.NotSatisfiable as e:
         print('s UNSATISFIABLE')
     except davis_putnam.UnknownSatisfiability:
