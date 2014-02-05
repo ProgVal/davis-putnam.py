@@ -9,7 +9,7 @@ def create_buckets(system):
     """Creates buckets from a given SAT problem."""
     buckets = [set() for x in range(0, system.nb_variables+1)]
     for clause in system:
-        buckets[abs(clause.max_literal())].add(clause)
+        buckets[clause.max_literal()].add(clause)
     return buckets
 
 def simplify_buckets(buckets, up_to):
@@ -18,18 +18,18 @@ def simplify_buckets(buckets, up_to):
             pred = lambda x:clause is x or not clause.issubset(x)
             for j in range(up_to, i, -1):
                 bucket2 = buckets[j]
-                assert all(map(lambda x:abs(x.max_literal())==j, bucket2)),\
+                assert all(map(lambda x:x.max_literal()==j, bucket2)),\
                         (j, bucket2)
                 new_bucket = set(filter(pred, bucket2))
-                assert all(map(lambda x:abs(x.max_literal())==j, new_bucket)),\
+                assert all(map(lambda x:x.max_literal()==j, new_bucket)),\
                         (j, new_bucket)
                 buckets[j] = new_bucket
 
 def resolve_bucket(bucket_id, buckets, verbose):
     """Returns possible resolutions for the given bucket."""
-    bucket = list(buckets[bucket_id])
-    with_literal = list(filter(lambda x:bucket_id in x and not x.always_satisfied, bucket))
-    with_negative_literal = list(filter(lambda x:-bucket_id in x and not x.always_satisfied, bucket))
+    bucket = list(filter(lambda x:not x.always_satisfied, buckets[bucket_id]))
+    with_literal = filter(lambda x:bucket_id in x, bucket)
+    with_negative_literal = list(filter(lambda x:-bucket_id in x, bucket))
     for (i, clause1) in enumerate(with_literal):
         # Iteration over clauses with positive occurence of the biggest
         # literal
@@ -40,7 +40,7 @@ def resolve_bucket(bucket_id, buckets, verbose):
             clause = clause1.strip_variable(bucket_id) | \
                     clause2.strip_variable(-bucket_id)
             # Resolution
-            index = abs(clause.max_literal())
+            index = clause.max_literal()
             # Index of the bucket we will put the clause in
             #assert index < bucket_id, (bucket_id, clause, clause1, clause2)
             if not clause.always_satisfied:

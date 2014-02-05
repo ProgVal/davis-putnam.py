@@ -1,7 +1,7 @@
 class Clause(frozenset):
     """A subclasses of frozenset (ie. unmutable set) that implements extra
     methods for computing clauses properties and operations."""
-    __slots__ = ()
+    __slots__ = ('_always_satisfied', '_max_literal')
     def __str__(self):
         return ' '.join(map(str, self)) + ' 0'
 
@@ -12,10 +12,13 @@ class Clause(frozenset):
     def max_literal(self):
         """Returns the maximum literal of the clauses, using the absolute
         value for ordering."""
-        if self:
-            return max(map(abs, self))
-        else:
-            return 0
+        if not hasattr(self, '_max_literal'):
+            # Caching
+            if self:
+                self._max_literal = max(map(abs, self))
+            else:
+                self._max_literal = 0
+        return self._max_literal
 
     def strip_variable(self, i):
         """Returns a clause with all instances of a literal and its negation
@@ -25,7 +28,10 @@ class Clause(frozenset):
     @property
     def always_satisfied(self):
         """Determines whether or not a clause is always satisfied."""
-        return any(map(lambda x:x in self and -x in self, range(1, self.max_literal()+1)))
+        if not hasattr(self, '_always_satisfied'):
+            # Caching
+            self._always_satisfied = any(map(lambda x:x in self and -x in self, range(1, self.max_literal()+1)))
+        return self._always_satisfied
 
     def is_satisfied(self, valuation):
         """Determines whether or not a clause is satisfied for the given
