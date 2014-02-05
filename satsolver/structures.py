@@ -13,7 +13,7 @@ class Clause(frozenset):
         """Returns the maximum literal of the clauses, using the absolute
         value for ordering."""
         if self:
-            return max(self, key=abs)
+            return max(map(abs, self))
         else:
             return 0
 
@@ -25,11 +25,7 @@ class Clause(frozenset):
     @property
     def always_satisfied(self):
         """Determines whether or not a clause is always satisfied."""
-        if len(self) != 2:
-            return False
-        else:
-            literals = list(self)
-            return literals[0] == -literals[1]
+        return any(map(lambda x:x in self and -x in self, range(1, self.max_literal()+1)))
 
     def is_satisfied(self, valuation):
         """Determines whether or not a clause is satisfied for the given
