@@ -6,7 +6,7 @@ Langage de programmation : Python (écrit pour Python 3, mais fonctionne aussi s
 Pas de compilation nécessaire (compilation faite à l’exécution).
 
 Exécution normale : ./resol tests/test1.cnf
-Exécution « verbeuse » (affiche l’avancement) : ./resol --verbose tests/test1.cnf
+Exécution « verbeuse » (affiche l’avancement) : ./resol -verbose tests/test1.cnf
 
 Remarque : si le nom de fichier n’est pas donné, lecture depuis l’entrée standard.
 
@@ -91,7 +91,7 @@ commande :
   une autre. Utiliser cette option est le seule moyen de résoudre
   de grandes instances (eg. les exemples donnés dans l’énoncé)
   en temps raisonnable.
-* -remove-tautologies, du même que --remove-duplicates, effectue
+* -remove-tautologies, du même que -remove-duplicates, effectue
   une économie en temps et en espace en n’ajoutant pas de
   tautologie à un seau.
 * -caching économise du temps de calcul en stockant les résultats
