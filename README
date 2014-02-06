@@ -1,12 +1,15 @@
 Utilisation
 ===========
 
-Langage de programmation : Python (écrit pour Python 3, mais fonctionne aussi sur Python 2)
+Langage de programmation : Python (s’exécute par défaut avec Python 3 ; si
+vous souhaitez l’exécuter avec Python 2, appellez « python ./resol » ou
+« python2 ./resol » (selon le système d’exploitation) au lieu de « ./resol »).
 
 Pas de compilation nécessaire (compilation faite à l’exécution).
 
 Exécution normale : ./resol tests/test1.cnf
 Exécution « verbeuse » (affiche l’avancement) : ./resol -verbose tests/test1.cnf
+Exécution optimisée (détails à la fin du README) : ./resol -O tests/test1.cnf
 
 Remarque : si le nom de fichier n’est pas donné, lecture depuis l’entrée standard.
 
