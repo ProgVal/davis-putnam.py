@@ -29,4 +29,4 @@ for clause in clauses:
 
 result = ' '.join(map(lambda i:str(-i), sorted(removed_clause, key=abs)))
 # Writing to stderr in order not to get it piped to the solver
-sys.stderr.write('The unique solution is: %s\n' % result)
+sys.stderr.write('c The unique solution is: %s\n' % result)
