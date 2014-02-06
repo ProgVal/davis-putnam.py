@@ -1,0 +1,138 @@
+Utilisation
+===========
+
+Langage de programmation : Python (écrit pour Python 3, mais fonctionne aussi sur Python 2)
+
+Pas de compilation nécessaire (compilation faite à l’exécution).
+
+Exécution normale : ./resol tests/test1.cnf
+Exécution « verbeuse » (affiche l’avancement) : ./resol --verbose tests/test1.cnf
+
+Remarque : si le nom de fichier n’est pas donné, lecture depuis l’entrée standard.
+
+Organisation du code
+====================
+
+Hiérarchie des fichiers
+-----------------------
+
+satsolver/ : contient le code principal
+    structures.py : fournit des classes pour manipuler les clauses.
+    parser.py : instancie des objets de structures.py à partir d’un flux de caractères
+    davis_putnam.py : implémentation de l’algorithme de Davis et Putnam
+resol : Fichier exécutable interprétant les paramètres donnés en ligne de commande, invoquant le code dans satsolver/ et affichant un résultat.
+
+Structures de données
+---------------------
+
+Deux structures de données sont définies dans ce projet (dans structures.py).
+
+structures.System contient une liste de clauses et des informations de
+l’en-tête (en pratique, seul le nombre de variables est utilisé).
+
+structures.Clause est un ensemble de litéraux (représentés par des entiers),
+qui dérive de la classe Python « frozenset », qui sert à stocker un ensemble
+d’éléments (ie. un tableau sans ordre ni doublon) inaltérable.
+L’intérêt de cette structure est de pouvoir rechercher rapidement un élément
+dedans (O(log n), important vu que le nombre de recherches est en n² où
+n est le nombre total de clauses dans un seau lors du traitement de ce
+seau) tout en économisant la mémoire. En effet, les seules autres
+possibilités pour que la recherche se fasse en o(n) étaient (à l’ordre des
+éléments près) :
+* un tableau où, pour tout i,
+  * T[i] = 1 si i apparait dans la clause
+  * T[i] = 1 si -i apparait dans la clause
+  * T[i] = 0 si i sinon
+* un tableau où, pour tout i,
+  * T[i] = 1 si i apparait dans la clause, 0 sinon
+  * T[2n+i] = 1 si -i apparait dans la clause, 0 sinon
+Mais de tels tableaux auraient pris autant de place en mémoire qu’il n’y a
+de variables au total.
+
+Parseur
+-------
+
+Le parseur est un système simple, lisant ligne par ligne et
+séparant au niveau des espaces ; à partir du header il initialise
+deux variables nb_variables et nb_clauses, et à partir de toutes
+les autres lignes qui ne sont pas des commentaires il crée une clause.
+
+Implémentation de l’algorithme de Davis et Putnam
+-------------------------------------------------
+
+L’implémentation se trouve dans le fichier satsolver/davis_putname.py.
+
+La fonction resolve_bucket effectue les résolutions — comme indiqué
+dans la présentation de début de semestre — pour l’un des seaux.
+
+Elle est appelée pour chacun des seaux, en partant du haut, par
+la fonction solve.
+Cette dernière recherche ensuite une valuation qui satisfasse
+toutes les clauses : pour chaque seau i, elle regarde les clauses qui
+ne sont pas satisfaites par la valuation partielle (ie. des
+variables x_1 à x_(i-1)), et :
+* s’il n’y a que des occurences négatives de x_i, elle met x_i à False
+* s’il y a des occurences positives de x_i (ie. si x_i n’apparait
+  négativement que dans des clauses où x_i apparait aussi positivement),
+  elle met x_i à True
+* sinon, c’est que l’équation n’est pas satisfiable
+
+[↑ réponse à la première question]
+
+Fonctionnalités supplémentaires
+===============================
+
+Deux fonctionnalités sont activables via des options de la ligne de
+commande :
+* -verbose affiche le numéro du seau en cours de traitement et le
+  nombre de clauses dans chacune des clauses
+* -remove-duplicates diminue grandement la durée d’exécution et la
+  taille des seaux, en supprimant une clause si elle en contient
+  une autre. Utiliser cette option est le seule moyen de résoudre
+  de grandes instances (eg. les exemples donnés dans l’énoncé)
+  en temps raisonnable.
+* -remove-tautologies, du même que --remove-duplicates, effectue
+  une économie en temps et en espace en n’ajoutant pas de
+  tautologie à un seau.
+* -caching économise du temps de calcul en stockant les résultats
+  au lieu de les recalculer à chaque fois (divise le temps d’exécution
+  par plus de deux)
+* -O est un raccourci pour activer les trois optimisations précédentes
+
+Tests de complexité croissante
+==============================
+
+Entrée : entier n
+Sortie : 2^n - 1 clauses, avec une unique solution
+Algorithme :
+    tests(n)
+        Si n = 1 alors
+            {-1, 1}
+        Sinon
+            Soit Clauses = tests(n-1) dans
+            {C ⋁ -n, C ∈ Clauses} ∪ {C ⋁ n, C ∈ Clauses}
+
+    Résultat : tests(n) auquel on retire une clause au hasard
+
+[↑ réponse à la seconde question]
+
+Implémentation : ./tests/complexity.py n
+(Remarque : Cette implémentation affiche aussi l’unique seule solution
+du système qu’elle a engendré)
+
+Commande pour les tests : time ./tests/complexity.py n | ./resol
+
+Durées d’exécution sans optimisation :
+    * n = 5  => t = 0.1s
+    * n = 6  => t = 0.3s
+    * n = 7  => t = 2s
+    * n = 8  => t = 16s
+    * n = 9  => t = 2min42
+    * n = 10 => plus de 10min
+Durées d’exécution avec toutes les optimisations :
+    * n = 8  => t = 0.3s
+    * n = 9  => t = 1s
+    * n = 10 => t = 4s
+    * n = 11 => t = 17s
+    * n = 12 => t = 1min13
+    * n = 14 => t = 5min32
