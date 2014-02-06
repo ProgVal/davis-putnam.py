@@ -25,7 +25,7 @@ def simplify_buckets(buckets, up_to):
                         (j, new_bucket)
                 buckets[j] = new_bucket
 
-def resolve_bucket(bucket_id, buckets, verbose):
+def resolve_bucket(bucket_id, buckets):
     """Returns possible resolutions for the given bucket."""
     bucket = list(filter(lambda x:not x.always_satisfied, buckets[bucket_id]))
     with_literal = filter(lambda x:bucket_id in x, bucket)
@@ -45,14 +45,15 @@ def resolve_bucket(bucket_id, buckets, verbose):
             #assert index < bucket_id, (bucket_id, clause, clause1, clause2)
             if not clause.always_satisfied:
                 buckets[index].add(clause)
-    simplify_buckets(buckets, bucket_id)
+    if REMOVE_DUPLICATES:
+        simplify_buckets(buckets, bucket_id)
 
-def solve(system, verbose=False):
+def solve(system):
     buckets = create_buckets(system)
     for i in range(len(buckets)-1, 0, -1):
-        if verbose:
+        if VERBOSE:
             print('%i %r' % (i, list(map(len, buckets))))
-        resolve_bucket(i, buckets, verbose)
+        resolve_bucket(i, buckets)
     valuation = []
     for (i, bucket) in enumerate(buckets):
         assert len(valuation) == i

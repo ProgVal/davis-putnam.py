@@ -3,6 +3,7 @@
 import sys
 
 from satsolver import parser
+from satsolver import structures
 from satsolver import davis_putnam
 
 def handle_args(keys):
@@ -24,14 +25,17 @@ def handle_args(keys):
         return (values, None)
 
 def main():
-    (options, filename) = handle_args(['verbose'])
+    (options, filename) = handle_args(['verbose', 'remove-duplicates', 'caching'])
+    davis_putnam.REMOVE_DUPLICATES = options['remove-duplicates']
+    davis_putnam.VERBOSE = options['verbose']
+    structures.CACHING = options['caching']
     if filename:
         with open(filename) as fd:
             system = parser.parse(fd)
     else:
         system = parser.parse(sys.stdin)
     try:
-        solution = davis_putnam.solve(system, options['verbose'])
+        solution = davis_putnam.solve(system)
     except davis_putnam.NotSatisfiable as e:
         print('s UNSATISFIABLE')
     except davis_putnam.UnknownSatisfiability:

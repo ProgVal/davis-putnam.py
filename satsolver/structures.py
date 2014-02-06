@@ -12,8 +12,7 @@ class Clause(frozenset):
     def max_literal(self):
         """Returns the maximum literal of the clauses, using the absolute
         value for ordering."""
-        if not hasattr(self, '_max_literal'):
-            # Caching
+        if not CACHING or not hasattr(self, '_max_literal'):
             if self:
                 self._max_literal = max(map(abs, self))
             else:
@@ -27,9 +26,8 @@ class Clause(frozenset):
 
     @property
     def always_satisfied(self):
-        """Determines whether or not a clause is always satisfied."""
-        if not hasattr(self, '_always_satisfied'):
-            # Caching
+        """Determines whether or not a clause is a tautology."""
+        if not CACHING or not hasattr(self, '_always_satisfied'):
             self._always_satisfied = any(map(lambda x:x in self and -x in self, range(1, self.max_literal()+1)))
         return self._always_satisfied
 
