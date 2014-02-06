@@ -27,7 +27,9 @@ def simplify_buckets(buckets, up_to):
 
 def resolve_bucket(bucket_id, buckets):
     """Returns possible resolutions for the given bucket."""
-    bucket = list(filter(lambda x:not x.always_satisfied, buckets[bucket_id]))
+    bucket = list(buckets[bucket_id])
+    if REMOVE_TAUTOLOGIES:
+        bucket = list(filter(lambda x:not x.always_satisfied, bucket))
     with_literal = filter(lambda x:bucket_id in x, bucket)
     with_negative_literal = list(filter(lambda x:-bucket_id in x, bucket))
     for (i, clause1) in enumerate(with_literal):
@@ -43,7 +45,7 @@ def resolve_bucket(bucket_id, buckets):
             index = clause.max_literal()
             # Index of the bucket we will put the clause in
             #assert index < bucket_id, (bucket_id, clause, clause1, clause2)
-            if not clause.always_satisfied:
+            if not REMOVE_TAUTOLOGIES or not clause.always_satisfied:
                 buckets[index].add(clause)
     if REMOVE_DUPLICATES:
         simplify_buckets(buckets, bucket_id)

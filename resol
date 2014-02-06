@@ -10,14 +10,14 @@ def handle_args(keys):
     args = list(sys.argv) # Shallow copy
     values = {}
     for key in keys:
-        if '--'+key in args[1:]:
+        if '-'+key in args[1:]:
             values[key] = True
-            args.remove('--'+key)
+            args.remove('-'+key)
         else:
             values[key] = False
     if len(args) > 2:
         print('Syntax: %s %s file.cnf' % (sys.argv[0],
-            ' '.join(map(lambda key:'[--%s]'%key, keys))))
+            ' '.join(map(lambda key:'[-%s]'%key, keys))))
         exit()
     elif len(args) == 2:
         return (values, args[1])
@@ -25,10 +25,12 @@ def handle_args(keys):
         return (values, None)
 
 def main():
-    (options, filename) = handle_args(['verbose', 'remove-duplicates', 'caching'])
-    davis_putnam.REMOVE_DUPLICATES = options['remove-duplicates']
+    (options, filename) = handle_args(['verbose', 'remove-duplicates',
+        'remove-tautologies', 'caching', 'O'])
+    davis_putnam.REMOVE_DUPLICATES = options['O'] or options['remove-duplicates']
+    davis_putnam.REMOVE_TAUTOLOGIES = options['O'] or options['remove-tautologies']
     davis_putnam.VERBOSE = options['verbose']
-    structures.CACHING = options['caching']
+    structures.CACHING = options['O'] or options['caching']
     if filename:
         with open(filename) as fd:
             system = parser.parse(fd)
