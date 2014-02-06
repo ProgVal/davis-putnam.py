@@ -32,7 +32,10 @@ l’en-tête (en pratique, seul le nombre de variables est utilisé).
 
 structures.Clause est un ensemble de litéraux (représentés par des entiers),
 qui dérive de la classe Python « frozenset », qui sert à stocker un ensemble
-d’éléments (ie. un tableau sans ordre ni doublon) inaltérable.
+d’éléments (ie. un tableau sans ordre ni doublon) inaltérable (il est
+nécessaire qu’il soit inaltérable, car — en général — seuls les objets
+inaltérables sont hashable (et donc stockables eux-même dans des ensembles)
+en Python).
 L’intérêt de cette structure est de pouvoir rechercher rapidement un élément
 dedans (O(log n), important vu que le nombre de recherches est en n² où
 n est le nombre total de clauses dans un seau lors du traitement de ce
